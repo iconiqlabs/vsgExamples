@@ -11,8 +11,8 @@ layout (binding = 0) buffer vec3_array
     float source[];
 };
 
-// destination set up a 2d image of vec4
-layout (binding = 1, rgba32f) uniform image2D destination;
+// destination set up a 2d image of ubvec4
+layout (binding = 1, rgba8ui) uniform uimage2D destination;
 
 void main()
 {
@@ -26,5 +26,6 @@ void main()
     // copy the vec3 texel from the source array to the final image and expand to vec4 by setting the alpha to 1.0.
     uint index = (column + row * WIDTH)*3;
     vec4 color = vec4(source[index], source[index+1], source[index+2], 1.0);
-    imageStore(destination, ivec2(column, row), color);
+    ivec4 ui_color = ivec4(int(color.r*255), int(color.g*255), int(color.b*255), 255);
+    imageStore(destination, ivec2(column, row), ui_color);
 }

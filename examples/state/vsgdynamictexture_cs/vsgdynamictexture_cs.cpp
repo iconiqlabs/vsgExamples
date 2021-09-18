@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
     vsg::ref_ptr<vsg::Image> image = vsg::Image::create();
     image->usage |= (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
-    image->format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    image->format = VK_FORMAT_R8G8B8A8_UNORM;
     image->mipLevels = 1;
     image->extent = VkExtent3D{textureData->width(), textureData->height(), 1};
     image->imageType = VK_IMAGE_TYPE_2D;
@@ -247,8 +247,8 @@ int main(int argc, char** argv)
         // binding 0 source buffer
         // binding 1 image2d
 
-        // allocate output storage buffer
-        VkDeviceSize bufferSize = sizeof(vsg::vec4) * width * height;
+        // allocate buffer to store data to be converted in compute shader
+        VkDeviceSize bufferSize = textureData->valueSize() * width * height;
         auto buffer = vsg::createBufferAndMemory(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         // set up DescriptorSetLayout, DecriptorSet and BindDescriptorSets
