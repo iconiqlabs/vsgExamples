@@ -1,5 +1,6 @@
 set(SOURCES
     vsgpoints.cpp
+    PointSprites.cpp
 )
 
 add_executable(vsgpoints ${SOURCES})

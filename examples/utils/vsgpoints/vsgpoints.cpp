@@ -4,6 +4,8 @@
 #    include <vsgXchange/all.h>
 #endif
 
+#include "PointSprites.h"
+
 #include <iostream>
 
 // use a static handle that is initialized once at start up to avoid multi-threaded issues associated with calling std::locale::classic().
@@ -345,6 +347,7 @@ vsg::ref_ptr<vsg::Node> read(const vsg::Path& filename, vsg::ref_ptr<const vsg::
     auto arrays = combineDataBlocks(dataBlocks, formatLayout);
     if (arrays.empty()) return {};
 
+#if 0
     auto bindVertexBuffers = vsg::BindVertexBuffers::create();
     bindVertexBuffers->arrays = arrays;
 
@@ -359,6 +362,54 @@ vsg::ref_ptr<vsg::Node> read(const vsg::Path& filename, vsg::ref_ptr<const vsg::
     sg->addChild(commands);
 
     return sg;
+#else
+
+#if 1
+    auto vertices = (arrays.size()>=1) ?arrays[0].cast<vsg::vec3Array>() : vsg::ref_ptr<vsg::vec3Array>();
+    auto normals = (arrays.size()>=2) ?arrays[1].cast<vsg::vec3Array>() : vsg::ref_ptr<vsg::vec3Array>();
+    auto colors = (arrays.size()>=3) ?arrays[2].cast<vsg::ubvec4Array>() : vsg::ref_ptr<vsg::ubvec4Array>();
+
+    std::cout<<" arrays[2] = "<<arrays[2]<<std::endl;
+
+    uint32_t maxSize = vertices->size();
+
+    auto particleSystem = vsg::PointSprites::create(maxSize, options);
+    if (vertices)
+    {
+        auto itr = particleSystem->vertices->begin();
+        for(auto& vertex : *vertices)
+        {
+            (*itr++) = vertex;
+        }
+        std::cout<<"Assigned vertices "<<std::endl;
+    }
+    if (normals)
+    {
+        auto itr = particleSystem->normals->begin();
+        for(auto& normal : *normals)
+        {
+            (*itr++) = normal;
+        }
+        std::cout<<"Assigned normals "<<std::endl;
+    }
+    if (colors)
+    {
+        auto itr = particleSystem->colors->begin();
+        for(auto& color : *colors)
+        {
+            (*itr++) = color;
+        }
+        std::cout<<"Assigned colors "<<std::endl;
+    }
+    particleSystem->draw->vertexCount = maxSize;
+#else
+    auto particleSystem = vsg::PointSprites::create(arrays, options);
+#endif
+
+    std::cout<<"particleSystem->draw->vertexCount =  "<<particleSystem->draw->vertexCount<<std::endl;
+
+    return particleSystem;
+#endif
 }
 
 int main(int argc, char** argv)
@@ -390,6 +441,11 @@ int main(int argc, char** argv)
     geomInfo.dz.set(0.0f, 0.0f, 1.0f);
 
     vsg::StateInfo stateInfo;
+
+    size_t frameToWait = 2;
+    arguments.read({"--frames-to-wait", "--f2w"}, frameToWait);
+    auto waitTimeout = arguments.value<uint64_t>(50000000, {"--timeout", "--to"});
+    bool dynamic = arguments.read("--dynamic");
 
     arguments.read("--screen", windowTraits->screenNum);
     arguments.read("--display", windowTraits->display);
@@ -490,7 +546,14 @@ int main(int argc, char** argv)
 
     viewer->addEventHandler(vsg::Trackball::create(camera));
 
-    auto commandGraph = vsg::createCommandGraphForView(window, camera, scene);
+    auto memoryBufferPools = vsg::MemoryBufferPools::create("Staging_MemoryBufferPool", window->getOrCreateDevice(), vsg::BufferPreferences{});
+    auto copyBufferCmd = vsg::CopyAndReleaseBuffer::create(memoryBufferPools);
+    auto renderGraph = vsg::createRenderGraphForView(window, camera, scene);
+
+    auto commandGraph = vsg::CommandGraph::create(window);
+    commandGraph->addChild(copyBufferCmd);
+    commandGraph->addChild(renderGraph);
+
     viewer->assignRecordAndSubmitTaskAndPresentation({commandGraph});
 
     viewer->compile();
@@ -498,11 +561,40 @@ int main(int argc, char** argv)
     auto startTime = vsg::clock::now();
     double numFramesCompleted = 0.0;
 
+
+    vsg::ref_ptr<vsg::PointSprites> sprites;
+    for(auto& child : scene->children)
+    {
+        sprites = child.cast<vsg::PointSprites>();
+        if (sprites) break;
+    }
+
+
     // rendering main loop
     while (viewer->advanceToNextFrame() && (numFrames < 0 || (numFrames--) > 0))
     {
         // pass any events into EventHandlers assigned to the Viewer
         viewer->handleEvents();
+
+        if (dynamic && sprites)
+        {
+            vsg::vec3 offset(0.0, 0.0, 0.1 * sin(static_cast<double>(viewer->getFrameStamp()->frameCount) * 0.1));
+            if (frameToWait > 0 && waitTimeout > 0)
+            {
+                viewer->waitForFences(frameToWait, waitTimeout);
+            }
+
+            for(auto& v : *(sprites->vertices)) v += offset;
+
+            auto& bufferInfoList = sprites->bindVertexBuffers->bufferInfoList(0);
+            for(auto& bufferInfo : bufferInfoList)
+            {
+                if (bufferInfo.data == sprites->vertices)
+                {
+                    copyBufferCmd->copy(sprites->vertices, bufferInfo);
+                }
+            }
+        }
 
         viewer->update();
 
