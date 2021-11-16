@@ -13,6 +13,7 @@
 #include <vsg/state/RasterizationState.h>
 #include <vsg/state/VertexInputState.h>
 #include <vsg/state/material.h>
+#include <vsg/state/DescriptorImage.h>
 
 #include <iostream>
 
@@ -194,7 +195,7 @@ PointSprites::PointSprites(uint32_t maxNumParticles, vsg::ref_ptr<const vsg::Opt
     colors = vsg::ubvec4Array::create(maxNumParticles);
 
     bindVertexBuffers = vsg::BindVertexBuffers::create();
-    bindVertexBuffers->arrays = { vertices, normals, colors };
+    bindVertexBuffers->assignArrays({ vertices, normals, colors });
 
     draw = vsg::Draw::create(0, 1, 0, 0);
 
@@ -212,7 +213,7 @@ PointSprites::PointSprites(const vsg::DataList& arrays, vsg::ref_ptr<const vsg::
     if (arrays.size()>=3) colors = arrays[2].cast<vsg::ubvec4Array>();
 
     bindVertexBuffers = vsg::BindVertexBuffers::create();
-    bindVertexBuffers->arrays = arrays;
+    bindVertexBuffers->assignArrays(arrays);
 
     draw = vsg::Draw::create(vertices->size(), 1, 0, 0);
 

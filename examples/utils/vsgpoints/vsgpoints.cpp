@@ -546,7 +546,7 @@ int main(int argc, char** argv)
 
     viewer->addEventHandler(vsg::Trackball::create(camera));
 
-    auto memoryBufferPools = vsg::MemoryBufferPools::create("Staging_MemoryBufferPool", window->getOrCreateDevice(), vsg::BufferPreferences{});
+    auto memoryBufferPools = vsg::MemoryBufferPools::create("Staging_MemoryBufferPool", window->getOrCreateDevice());
     auto copyBufferCmd = vsg::CopyAndReleaseBuffer::create(memoryBufferPools);
     auto renderGraph = vsg::createRenderGraphForView(window, camera, scene);
 
@@ -586,12 +586,11 @@ int main(int argc, char** argv)
 
             for(auto& v : *(sprites->vertices)) v += offset;
 
-            auto& bufferInfoList = sprites->bindVertexBuffers->bufferInfoList(0);
-            for(auto& bufferInfo : bufferInfoList)
+            for(auto& array : sprites->bindVertexBuffers->arrays)
             {
-                if (bufferInfo.data == sprites->vertices)
+                if (array->data == sprites->vertices)
                 {
-                    copyBufferCmd->copy(sprites->vertices, bufferInfo);
+                    copyBufferCmd->copy(sprites->vertices, array);
                 }
             }
         }
