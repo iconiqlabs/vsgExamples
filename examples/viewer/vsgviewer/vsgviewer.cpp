@@ -9,8 +9,6 @@
 #include <iostream>
 #include <thread>
 
-#include "../../shared/AnimationPath.h"
-
 vsg::ref_ptr<vsg::Node> createTextureQuad(vsg::ref_ptr<vsg::Data> sourceData, uint32_t mipmapLevelsHints)
 {
     struct ConvertToRGBA : public vsg::Visitor
@@ -327,13 +325,6 @@ int main(int argc, char** argv)
         if (loadLevels > 0)
         {
             vsg::LoadPagedLOD loadPagedLOD(camera, loadLevels);
-
-            if (!path.empty())
-            {
-                options->paths.insert(options->paths.begin(), path);
-            }
-
-            loadPagedLOD.options = options;
 
             auto startTime = std::chrono::steady_clock::now();
 

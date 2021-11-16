@@ -7,8 +7,6 @@
 #include <iostream>
 #include <thread>
 
-#include "../../shared/AnimationPath.h"
-
 #include "TileReader.h"
 
 int main(int argc, char** argv)
@@ -209,15 +207,6 @@ int main(int argc, char** argv)
         if (loadLevels > 0)
         {
             vsg::LoadPagedLOD loadPagedLOD(camera, loadLevels);
-
-#if 0
-            if (!path.empty())
-            {
-                options->paths.insert(options->paths.begin(), path);
-            }
-#endif
-
-            loadPagedLOD.options = options;
 
             auto startTime = std::chrono::steady_clock::now();
 

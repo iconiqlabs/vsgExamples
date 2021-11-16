@@ -258,21 +258,21 @@ int main(int argc, char** argv)
 
         vsg::ref_ptr<vsg::CopyAndReleaseBuffer> copyBufferCmd;
         vsg::ref_ptr<vsg::DescriptorBuffer> clipSettings_buffer;
-        vsg::BufferInfo bufferInfo;
+        auto bufferInfo = vsg::BufferInfo::create();
 
         if (useStagingBuffer)
         {
             std::cout << "Using Staging Buffer DescriptorBuffer" << std::endl;
-            auto memoryBufferPools = vsg::MemoryBufferPools::create("Staging_MemoryBufferPool", device, vsg::BufferPreferences{});
+            auto memoryBufferPools = vsg::MemoryBufferPools::create("Staging_MemoryBufferPool", device);
             copyBufferCmd = vsg::CopyAndReleaseBuffer::create(memoryBufferPools);
 
             // allocate output storage buffer
             VkDeviceSize bufferSize = sizeof(vsg::vec4) * 1;
             auto buffer = vsg::createBufferAndMemory(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-            bufferInfo.buffer = buffer;
-            bufferInfo.offset = 0;
-            bufferInfo.range = bufferSize;
+            bufferInfo->buffer = buffer;
+            bufferInfo->offset = 0;
+            bufferInfo->range = bufferSize;
 
             clipSettings_buffer = vsg::DescriptorBuffer::create(vsg::BufferInfoList{bufferInfo}, 0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
@@ -369,8 +369,7 @@ int main(int argc, char** argv)
                 auto& world_sphere = worldClipSettings->at(i);
                 auto& eye_sphere = eyeClipSettings->at(i);
 
-                vsg::dmat4 viewMatrix;
-                camera->viewMatrix->get(viewMatrix);
+                vsg::dmat4 viewMatrix = camera->viewMatrix->transform();
 
                 vsg::dvec3 world_center(world_sphere.x, world_sphere.y, world_sphere.z);
                 vsg::dvec3 eye_center = viewMatrix * world_center;
