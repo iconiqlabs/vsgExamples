@@ -45,11 +45,11 @@ vsg_add_target_clang_format(
 vsg_add_target_clobber()
 vsg_add_target_cppcheck(
     FILES
-        examples/
+        src/
 )
 vsg_add_target_docs(
     FILES
-        examples/
+        src/
 )
 vsg_add_target_uninstall()
 
@@ -59,22 +59,22 @@ vsg_add_option_maintainer(
 )
 
 # pure VSG examples
-add_subdirectory(examples/core)
-add_subdirectory(examples/maths)
-add_subdirectory(examples/io)
-add_subdirectory(examples/ui)
-add_subdirectory(examples/state)
-add_subdirectory(examples/commands)
-add_subdirectory(examples/nodes)
-add_subdirectory(examples/traversals)
-add_subdirectory(examples/threading)
-add_subdirectory(examples/viewer)
-add_subdirectory(examples/vk)
-add_subdirectory(examples/text)
-add_subdirectory(examples/rtx)
-add_subdirectory(examples/raytracing)
-add_subdirectory(examples/introspection)
-add_subdirectory(examples/platform)
-add_subdirectory(examples/utils)
+add_subdirectory(src/core)
+add_subdirectory(src/maths)
+add_subdirectory(src/io)
+add_subdirectory(src/ui)
+add_subdirectory(src/state)
+add_subdirectory(src/commands)
+add_subdirectory(src/nodes)
+add_subdirectory(src/traversals)
+add_subdirectory(src/threading)
+add_subdirectory(src/viewer)
+add_subdirectory(src/vk)
+add_subdirectory(src/text)
+add_subdirectory(src/rtx)
+add_subdirectory(src/raytracing)
+add_subdirectory(src/introspection)
+add_subdirectory(src/platform)
+add_subdirectory(src/utils)
 
 vsg_add_feature_summary()
